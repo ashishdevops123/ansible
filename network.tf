@@ -24,23 +24,9 @@ resource "aws_route_table" "public_rt" {
   
 }
 
-//elastic ip for nat
 
-resource "aws_eip" "for_nat" {
-  vpc     = true
-  tags    = {
-    name  = "for natgateway"
-  }
-}
 
-// created elasticip now nategateway
 
-resource "aws_nat_gateway" "nat_gateway" {
-  allocation_id = aws_eip.for_nat.id
-  subnet_id     = aws_subnet.subnet[0].id
-
-  
-}
 
 
 resource "aws_route_table" "private_rt" {
