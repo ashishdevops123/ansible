@@ -32,10 +32,7 @@ resource "aws_route_table" "public_rt" {
 resource "aws_route_table" "private_rt" {
     vpc_id         = aws_vpc.primary_vpc.id
 
-    route  {
-       cidr_block     = local.anywhere
-      
-      }
+    
    
     tags = {
       name = "Private-routetable"
