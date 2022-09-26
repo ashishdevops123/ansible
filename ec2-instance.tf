@@ -25,7 +25,7 @@ resource "null_resource" "inlinescript" {
     type        = "ssh"
     user        = "ubuntu"
     private_key = file("./kubernetes.pem")
-    host        = aws_instance.ubuntu[0].public_ip
+    host        = aws_instance.ubuntu[count.index].public_ip
   }
 
 provisioner "remote-exec" {
