@@ -40,12 +40,17 @@ provisioner "remote-exec" {
 provisioner "remote-exec" {
         inline = [
           "sudo apt update",
-          "sudo apt install python3 -y",
+          "sudo apt install python3  -y",
+          "sudo apt install git  -y"
         ]
     }
+provisioner "local-exec" {
+        command = "git clone https://github.com/ashishdevops123/playbooks.git"
+      
+    }     
 
 provisioner "local-exec" {
-        command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ubuntu -i '${aws_instance.ubuntu.public_ip},' --private-key './kubernetes.pem' sample.yaml"
+        command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ubuntu -i '${aws_instance.ubuntu.public_ip},' --private-key './kubernetes.pem' /home/ansible/playbooks/tomcat9.tomcat.yaml"
       
     }    
 
