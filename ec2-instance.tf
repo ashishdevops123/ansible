@@ -48,7 +48,7 @@ provisioner "remote-exec" {
    
 
 provisioner "local-exec" {
-        command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ubuntu -i all '${aws_instance.ubuntu.public_ip},' --private-key './kubernetes.pem' tomcat.yaml"
+        command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ubuntu -i  '${aws_instance.ubuntu.public_ip},' --private-key './kubernetes.pem' tomcat.yaml"
       
     }    
 
