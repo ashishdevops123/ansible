@@ -11,14 +11,10 @@ resource "aws_instance" "ubuntu" {
       env  = "development"
     }
 }
-  
-// for null resource
 
 
-resource "null_resource" "inlinescript" {
-  triggers = {
-    build_id = var.build_id
-  }
+
+
 
 
   connection {
@@ -52,7 +48,7 @@ provisioner "local-exec" {
       
     }    
 
-}
+
 
 
 
