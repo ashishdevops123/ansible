@@ -1,7 +1,7 @@
 --- 
 - name: tomcat9 installation on ubuntu
   become: yes
-  hosts: all
+  hosts: 172.31.24.5
   vars:
     - java_version: 'openjdk-11-jdk'
     - tomcat_user: tomcat

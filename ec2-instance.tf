@@ -11,10 +11,14 @@ resource "aws_instance" "ubuntu" {
       env  = "development"
     }
 }
+  
+// for null resource
 
 
-
-
+resource "null_resource" "inlinescript" {
+  triggers = {
+    build_id = var.build_id
+  }
 
 
   connection {
@@ -44,11 +48,11 @@ provisioner "remote-exec" {
    
 
 provisioner "local-exec" {
-        command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ubuntu -i /home/ubuntu/jenkins/ansible/hosts '${aws_instance.ubuntu.public_ip},' --private-key './kubernetes.pem' /home/ubuntu/jenkins/ansible.tomcat.yaml"
+        command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ubuntu -i all '${aws_instance.ubuntu.public_ip},' --private-key './kubernetes.pem' /home/ubuntu/jenkins/ansible.tomcat.yaml"
       
     }    
 
-
+}
 
 
 
