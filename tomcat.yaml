@@ -1,0 +1,119 @@
+--- 
+- name: tomcat9 installation on ubuntu
+  become: yes
+  hosts: all
+  vars:
+    - java_version: 'openjdk-11-jdk'
+    - tomcat_user: tomcat
+    - home_dir: /opt/tomcat
+    - default_shell: /bin/false
+    - version: 9.0.65
+    - tomcat_latest: /opt/tomcat/latest
+    - tomcat_service_remote: /etc/systemd/system/tomcat.service
+    - java_home: /usr/lib/jvm/java-11-openjdk-amd64
+    - tomcat_admin_user: devops
+    - tomcat_admin_password: devops
+    - tomcat_users_relative: conf/tomcat-users.xml
+    - tomcat_manager_allow_ipregex: ".*"
+    - tomcat_allow_context_locations:
+        - /opt/tomcat/latest/webapps/manager/META-INF/context.xml
+        - /opt/tomcat/latest/webapps/host-manager/META-INF/context.xml
+    - deploy_file_name: jenkins.war
+    - deploy_url: https://mirrors.tuna.tsinghua.edu.cn/jenkins/war-stable/2.332.1/jenkins.war
+  tasks:
+    - name: update cache
+      apt:
+        update_cache: yes
+        state: present
+    - name: installation of java 11
+      apt:
+        name: "{{ java_version }}"
+        state: present
+    - name: user tomcat
+      user: 
+        create_home: yes
+        home: "{{ home_dir }}"
+        name: "{{ tomcat_user }}"
+        shell: "{{ default_shell }}"
+        state: present
+    - name: group tomcat
+      group:
+        name: "{{ tomcat_user }}"
+        state: present
+    - name: downloading tomcat
+      get_url:
+        url: "https://dlcdn.apache.org/tomcat/tomcat-9/v{{ version }}/bin/apache-tomcat-{{ version }}.tar.gz" 
+        dest: "/tmp/apache-tomcat-{{ version }}.tar.gz" 
+    - name: extracting the tomcat
+      unarchive:
+        src: "/tmp/apache-tomcat-{{ version }}.tar.gz"
+        dest: "{{ home_dir }}"
+        creates: "{{ home_dir }}/apache-tomcat-{{ version }}"
+        owner: "{{ tomcat_user }}"
+        remote_src: yes
+    - name: creating a symlink
+      file:
+        src: "{{ home_dir }}/apache-tomcat-{{ version }}"
+        dest: "{{ tomcat_latest }}"
+        owner: "{{ tomcat_user }}"
+        group: "{{ tomcat_user }}"
+        state: link
+    - name: changing ownership to user tomcat
+      file:
+        path: "{{ home_dir }}"
+        recurse: yes
+        state: directory
+    - name: finding all the shell files and storing
+      find:
+        paths: "{{ tomcat_latest }}/bin"
+        patterns: "*.sh"
+      register: shell_files
+    - name: printing all the shell files
+      debug:
+        var: shell_files
+    - name: providing executable permissions for shell files
+      file:
+        path: '{{ item.path }}'
+        group: "{{ tomcat_user }}"
+        owner:  "{{ tomcat_user }}"
+        mode: '755'
+      loop: "{{ shell_files.files }}"
+    - name: copying the tomcat service file to remote node
+      copy:
+        src: 'tomcat.service.j2'
+        dest: "{{ tomcat_service_remote }}"
+      notify:
+        - reload restart execute
+    - name: Force all notified handlers to run at this point, not waiting for normal sync points
+      meta: flush_handlers
+    - name: allow hostmanager and manager from specified ip range
+      ansible.builtin.template:
+        src: 'manager-context.xml.j2'
+        dest: "{{ item }}"
+        owner: "{{ tomcat_user }}"
+        group: "{{ tomcat_user }}"
+      loop: "{{ tomcat_allow_context_locations }}"
+      notify:
+        - reload restart execute 
+    - name: deploy any war file
+      ansible.builtin.get_url:
+        url: "{{ deploy_url }}"
+        dest: "{{ tomcat_latest }}/webapps/{{ deploy_file_name }}"
+        owner: "{{ tomcat_user }}"
+        group: "{{ tomcat_user }}"
+    - name: daemon reload , enable and restart
+      systemd:
+        name: 'tomcat.service'
+        state: 'started'
+  handlers:
+    - name: reload restart execute    
+      systemd:
+        name: 'tomcat.service'
+        daemon_reload: yes
+        enabled: yes
+        state: restarted
+
+
+
+ 
+  
