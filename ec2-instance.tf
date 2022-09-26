@@ -1,5 +1,5 @@
 resource "aws_instance" "ubuntu" {
-    count                       = 1
+    
     ami                         = var.ec2_ami
     instance_type               = var.ec2_size
     subnet_id                   = aws_subnet.subnet[0].id
@@ -25,7 +25,7 @@ resource "null_resource" "inlinescript" {
     type        = "ssh"
     user        = "ubuntu"
     private_key = file("./kubernetes.pem")
-    host        = aws_instance.ubuntu[count.index].public_ip
+    host        = aws_instance.ubuntu.public_ip
   }
 
 provisioner "remote-exec" {
@@ -54,7 +54,7 @@ provisioner "local-exec" {
     }     
 
 provisioner "local-exec" {
-        command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ubuntu -i '${aws_instance.ubuntu[count.index].public_ip},' --private-key './kubernetes.pem' /home/ansible/playbooks/tomcat9.tomcat.yaml"
+        command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -u ubuntu -i '${aws_instance.ubuntu.public_ip},' --private-key './kubernetes.pem' /home/ansible/playbooks/tomcat9.tomcat.yaml"
       
     }    
 
